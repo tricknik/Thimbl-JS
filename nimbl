@@ -1,0 +1,54 @@
+#!/usr/bin/node
+
+/*~~~~~~/~~~~~~~~~*         ^^^
+ ~               ~~~**~~~~
+ #   Nimbl               ~~~~~~~/~~~~***
+ ~
+ #   A Thimbl-API client for Node
+ #   http://www.thimbl.net
+  ~
+  #  Dmytri Kleiner <dk@telekommunisten.net>
+  ~
+  ~  ~~~~~~~/~~~~***~~~~~~~~#~~~~/~~
+  ~~~~*/
+
+require.paths.push('scripts/common');
+
+var sys = require('sys'),
+  events = require('events'),
+  Thimbl = require('thimbl').Thimbl;
+
+var Nimbl = function(address) {
+  this.thimbl = new Thimbl(address);
+};
+sys.inherits(Nimbl, events.EventEmitter);
+
+Nimbl.prototype.feed = function(filter) {
+  var nimbl = this;
+  var emit_updates = function(err, feed) {
+    if (err) {
+     nimbl.emit('error', err);
+    } else {
+      for (item in feed) {
+        nimbl.emit('post', item);
+      }       
+    }
+  }
+  thimbl.feed(filter, emit_updates);
+};
+
+if (!module.parent) {
+  /* Console */
+  console.log('~ Thimbl');
+  var display_feed = function(filter) {
+    var nimbl = new Nimbl("dk@telekommunisten.org");
+    var display_update = function(update) {
+      console.log(update.toString());
+    };
+    nimbl.on('post', display_update); 
+    nimbl.feed(filter);
+  };
+
+  display_feed();
+
+}
