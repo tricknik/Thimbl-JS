@@ -1,0 +1,6 @@
+[submodule "scripts/vendor/underscore"]
+	path = scripts/vendor/underscore
+	url = https://github.com/documentcloud/underscore.git
+[submodule "scripts/vendor/backbone"]
+	path = scripts/vendor/backbone
+	url = https://github.com/documentcloud/backbone.git
