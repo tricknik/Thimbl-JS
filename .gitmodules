@@ -4,3 +4,15 @@
 [submodule "scripts/vendor/backbone"]
 	path = scripts/vendor/backbone
 	url = https://github.com/documentcloud/backbone.git
+[submodule "scripts/vendor/node-operetta"]
+	path = scripts/vendor/node-operetta
+	url = git@github.com:tricknik/node-operetta.git
+[submodule "scripts/vendor/jsdom"]
+	path = scripts/vendor/jsdom
+	url = https://github.com/tmpvar/jsdom.git
+[submodule "scripts/vendor/node-htmlparser"]
+	path = scripts/vendor/node-htmlparser
+	url = http://github.com/tautologistics/node-htmlparser.git
+[submodule "scripts/vendor/node-XMLHttpRequest"]
+	path = scripts/vendor/node-XMLHttpRequest
+	url = https://github.com/driverdan/node-XMLHttpRequest.git

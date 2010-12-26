@@ -1,67 +1,51 @@
 #!/usr/bin/node
 
 /*
-##  _  _ _       _    _
-## : \: (#)_ __ : :__: :
-## : .` : : '  \: '_ \ :
-## :_:\_:_:_:_:_:_.__/_:
-##
-##   A Thimbl-API client for Node
-##   http://www.thimbl.net
-##   Dmytri Kleiner <dk@telekommunisten.net>
+#    _  _ _       _    _
+ #  : \: (#)_ __ : :__: :
+#   : .` : : '  \: '_ \ :
+ #  :_:\_:_:_:_:_:_.__/_:
+# 
+ #    A Thimbl-API client for Node
+#     http://www.thimbl.net
+ #    Dmytri Kleiner <dk@telekommunisten.net>
 */
 
-require.paths.push('scripts/common');
-require.paths.push('scripts/vendor');
+process.on("uncaughtException", function (err) {
+  console.log("Uncaught exception: " + err);
+  console.log(err.stack);
+  throw err;
+});
 
-var sys = require('sys'),
-  events = require('events'),
-  Thimbl = require('thimbl').Thimbl;
+require.paths.push("scripts");
+require.paths.push("scripts/vendor");
+require.paths.push("scripts/vendor/jsdom/lib");
+require.paths.push("scripts/vendor/node-htmlparser/lib");
+require.paths.push("scripts/vendor/node-XMLHttpRequest");
 
-var Nimbl = function(address) {
-  this.thimbl = new Thimbl(address);
-};
-sys.inherits(Nimbl, events.EventEmitter);
+var Thimbl = require("thimbl").Thimbl,
+  jsdom  = require("jsdom"),
+  window = jsdom.jsdom().createWindow();
 
-Nimbl.prototype.feed = function(filter) {
-  var nimbl = this;
-  var emit_updates = function(err, feed) {
-    if (err) {
-     nimbl.emit('error', err);
-    } else {
-      for (item in feed) {
-        nimbl.emit('post', item);
-      }
-    }
-  }
-  nimbl.thimbl.feed(filter, emit_updates);
+var Nimbl = function() {
+  return new Thimbl(window);
 };
 
-if (!module.parent) {
-  /* Console */
-  console.log('= Thimbl =');
-  var Operetta = require('operetta/operetta').Operetta;
-  var options = [
-    ['-h', '--help', 'shows nimbl help']
-  ];
-  var operetta = new operetta.Operetta();
-  parser.banner = 'Usage: nimbl [options]';
-  parser.on('help', function() {
-    console.log('hey');
-    sys.puts('Help');
-  });
-  var display_feed = function(filter) {
-    var nimbl = new Nimbl("dk@telekommunisten.org");
-    var display_update = function(update) {
-      console.log(update.toString());
-    };
-    nimbl.on('post', display_update); 
-    nimbl.feed(filter);
-  };
-
-  //display_feed();
-
-} else {
-  exports.Nimbl = Nimbl
-}
+jsdom.jQueryify(window, 'jquery.js', function() {
+  window.XMLHttpRequest = require("XMLHttpRequest").XMLHttpRequest;
+  if (!module.parent) {
+   /* Console */
+    var Operetta = require("node-operetta/operetta").Operetta;
+    var operetta = new Operetta();
+    var nimbl = new Nimbl();
+    operetta.banner = "Nimbl. A Thimbl-API client for Node.";
+    operetta.parameters(["-P","--plan"], "Output Raw .plan file", function(user) {
+      console.log(["=",user,"="].join(" "));
+      nimbl.profile(user, function(plan) {
+        console.log(plan);
+      });
+    });
+    operetta.start();
+  } else module.exports.Nimbl = Nimbl;
+});
 

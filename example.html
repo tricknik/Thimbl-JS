@@ -1,0 +1,11 @@
+<html>
+  <script src="jquery.js"></script>
+  <script src="scripts/thimbl.js"></script>
+  <script>
+  thimbl = new Thimbl(window);
+  thimbl.profile("dk@telekommunisten.org", function(plan) {
+    document.write(plan.name);
+  });
+  </script>
+</html>
+
