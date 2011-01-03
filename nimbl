@@ -24,12 +24,16 @@ require.paths.push("scripts/vendor/node-htmlparser/lib");
 require.paths.push("scripts/vendor/node-XMLHttpRequest");
 
 var Thimbl = require("thimbl").Thimbl,
+  path  = require("path"),
+  fs  = require("fs"),
   jsdom  = require("jsdom"),
+  querystring  = require("querystring"),
   window = jsdom.jsdom().createWindow();
 
 var Nimbl = function() {
   return new Thimbl(window);
 };
+Nimbl.thimbl_file = path.join(process.env.HOME, ".nimbl");
 
 jsdom.jQueryify(window, 'jquery.js', function() {
   window.XMLHttpRequest = require("XMLHttpRequest").XMLHttpRequest;
@@ -39,10 +43,40 @@ jsdom.jQueryify(window, 'jquery.js', function() {
     var operetta = new Operetta();
     var nimbl = new Nimbl();
     operetta.banner = "Nimbl. A Thimbl-API client for Node.";
-    operetta.parameters(["-P","--plan"], "Output Raw .plan file", function(user) {
+    operetta.command("login", "login to thimbl", function(command) {
+      command.banner = "Nimbl Login. Login to a Thimbl account\n";
+      command.parameters(["-u","--user"], "account");
+      command.parameters(["-p","--password"], "password");
+      command.start(function(values) {
+        var u = querystring.escape(values["-u"]),
+          p = querystring.escape(values["-p"]);
+        nimbl.login(u, p, function(err, data) {
+          if (err) throw err;
+          stream = fs.writeFile(Nimbl.thimbl_file, JSON.stringify(data));
+        });
+      });
+    });
+    operetta.options(["-p","--profile"], "Show User Profile", function() {
+      stream = fs.readFile(Nimbl.thimbl_file, function(err, data) { 
+        var user = JSON.parse(data).user;
+        console.log(["=",user,"="].join(" "));
+        nimbl.profile(user, function(err, plan) {
+          console.log("name", plan.name);
+          console.log("address", plan.address);
+          console.log("= properties =");
+          for (p in plan.properties) {
+            var v = plan.properties[p];
+            if (v) {
+              console.log(p,v);
+            }
+          }
+        });
+      });
+    });
+    operetta.parameters(["-P","--plan"], "Output Raw .plan file for any user", function(user) {
       console.log(["=",user,"="].join(" "));
-      nimbl.profile(user, function(plan) {
-        console.log(plan);
+      nimbl.profile(user, function(err, plan) {
+        console.log(JSON.stringify(plan));
       });
     });
     operetta.start();
