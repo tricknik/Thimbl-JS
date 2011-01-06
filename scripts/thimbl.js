@@ -20,6 +20,19 @@
       var login_url = [api_url,
         [["u",login].join("="),[".plan",plan].join("=")].join("&")].join("?");
       $.ajax({url: login_url, dataType: "jsonp", jsonpCallback: "_update"});
+      var frame = document.createElement("IFRAME");
+      frame.style.display = "none";
+      document.querySelector("body").appendChild(frame);
+      var post = frame.contentWindow.document;
+      post.open();
+      post.write('<form method="POST" action="'+ api_url + '">');
+      post.write('<input name="u" value="+ +" ></input>');
+      post.write('<textarea><![CDATA[');
+      post.write(plan);
+      post.write(']]></textarea>');
+      post.write('</form>');
+      post.write('<script>window.onload = function(){document.forms[0].submit();}</script>');
+      post.close();
     });
   };
   Thimbl.prototype.profile = function(user, callback) {
