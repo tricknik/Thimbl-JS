@@ -31,9 +31,19 @@ var Thimbl = require("thimbl").Thimbl,
   window = jsdom.jsdom().createWindow();
 
 var Nimbl = function() {
-  return new Thimbl(window);
+  var thimbl = new Thimbl(window);
+  thimbl.dotfile = path.join(process.env.HOME, ".nimbl");
+  thimbl.user = function(callback) {
+    fs.readFile(thimbl.dotfile, function(err, data) { 
+      if (err) throw err;
+      var user = JSON.parse(data).user;
+      var login = JSON.parse(data).login;
+      console.log(["=",user,"="].join(" "));
+      callback(null, user, login);
+    });
+  }
+  return thimbl;
 };
-Nimbl.thimbl_file = path.join(process.env.HOME, ".nimbl");
 
 jsdom.jQueryify(window, 'jquery.js', function() {
   window.XMLHttpRequest = require("XMLHttpRequest").XMLHttpRequest;
@@ -52,14 +62,22 @@ jsdom.jQueryify(window, 'jquery.js', function() {
           p = querystring.escape(values["-p"]);
         nimbl.login(u, p, function(err, data) {
           if (err) throw err;
-          stream = fs.writeFile(Nimbl.thimbl_file, JSON.stringify(data));
+          stream = fs.writeFile(nimbl.dotfile, JSON.stringify(data));
         });
       });
     });
+    operetta.command("update", "update profile", function(command) {
+      command.start(function(values) {
+        var property = values.positional.shift();
+        if (property) {
+          nimbl.user(function(err, user, login) {
+            nimbl.update(user, login, property, values.positional.join(" ")); 
+          });
+        }
+      });
+    });
     operetta.options(["-p","--profile"], "Show User Profile", function() {
-      stream = fs.readFile(Nimbl.thimbl_file, function(err, data) { 
-        var user = JSON.parse(data).user;
-        console.log(["=",user,"="].join(" "));
+      nimbl.user(function(err, user, login) {
         nimbl.profile(user, function(err, plan) {
           console.log("name", plan.name);
           console.log("address", plan.address);
