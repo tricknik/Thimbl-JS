@@ -12,14 +12,17 @@
         profile.properties = profile.properties || {};
         profile.properties[property] = value;
       }  
-      window._update = function(data, status) {
+      window._update = function() {
         thimbl.plan = null;
       };
-      var plan = escape(JSON.stringify(profile));
+      var plan = encodeURIComponent(JSON.stringify(profile));
       var api_url = "https://users.thimbl.net/account";
-      var login_url = [api_url,
-        [["u",login].join("="),[".plan",plan].join("=")].join("&")].join("?");
-      $.ajax({url: login_url, dataType: "jsonp", jsonpCallback: "_update"});
+      var data = [['u', encodeURIComponent(login)].join("="),
+        ['.plan', encodeURIComponent(JSON.stringify(profile))].join("=")].join("&");
+      http = new window.XMLHttpRequest();
+      http.onreadystatechange = window._update;
+      http.open("GET", [api_url,data].join("?"), true);
+      http.send(null);
     });
   };
   Thimbl.prototype.profile = function(user, callback) {
@@ -45,7 +48,8 @@
     };
     var api_url = "https://users.thimbl.net/account";
     var login_url = [api_url,
-      [["u",user].join("="),["password",password].join("=")].join("&")].join("?");
+      [["u",encodeURIComponent(user)].join("="),
+        ["password",encodeURIComponent(password)].join("=")].join("&")].join("?");
     $.ajax({url: login_url, dataType: "jsonp", jsonpCallback: "_login"});
   };
   if (typeof module !== "undefined" && module.exports) {

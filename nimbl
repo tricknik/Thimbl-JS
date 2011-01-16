@@ -58,8 +58,8 @@ jsdom.jQueryify(window, 'jquery.js', function() {
       command.parameters(["-u","--user"], "account");
       command.parameters(["-p","--password"], "password");
       command.start(function(values) {
-        var u = querystring.escape(values["-u"]),
-          p = querystring.escape(values["-p"]);
+        var u = values["-u"],
+          p = values["-p"];
         nimbl.login(u, p, function(err, data) {
           if (err) throw err;
           stream = fs.writeFile(nimbl.dotfile, JSON.stringify(data));
